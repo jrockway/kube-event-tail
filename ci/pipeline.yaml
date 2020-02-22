@@ -29,9 +29,16 @@ resources:
           repository: registry.jrock.us/kube-event-tail
           username: ((registry.username))
           password: ((registry.password))
+    - name: release-container
+      type: registry-image
+      icon: docker
+      source:
+          repository: docker.io/jrockway/kube-event-tail
+          username: jrockway
+          password: ((dockerhub.token))
 
 jobs:
-    - name: build
+    - name: ci
       public: true
       plan:
           - get: golang-latest
@@ -78,3 +85,44 @@ jobs:
           - put: kube-event-tail-version
             params:
                 file: kube-event-tail-version/version
+    - name: release
+      public: true
+      plan:
+          - get: golang-latest
+            trigger: false
+          - get: source
+            trigger: false
+          - task: test
+            image: golang-latest
+            config:
+                platform: linux
+                inputs:
+                    - name: source
+                      path: kube-event-tail
+                run:
+                    path: /bin/sh
+                    args:
+                        - -c
+                        - |
+                            cd kube-event-tail
+                            go test -v -race ./...
+          - task: build
+            privileged: true
+            config:
+                platform: linux
+                image_resource:
+                    type: registry-image
+                    source:
+                        repository: vito/oci-build-task
+                params:
+                    CONTEXT: source
+                inputs:
+                    - name: source
+                outputs:
+                    - name: image
+                run:
+                    path: build
+          - put: release-container
+            params:
+                image: image/image.tar
+                additional_tags: source/.version
