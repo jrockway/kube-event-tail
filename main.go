@@ -76,7 +76,7 @@ func LogEvent(e *v1.Event) {
 		return
 	}
 	eventCount.WithLabelValues(e.ObjectMeta.Namespace).Inc()
-	msg := "event without messagee"
+	msg := "event without message"
 	if e.Message != "" {
 		msg = e.Message
 	}
