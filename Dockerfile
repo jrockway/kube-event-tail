@@ -5,7 +5,7 @@ COPY go.mod go.sum /kube-event-tail/
 RUN go mod download
 
 COPY . /kube-event-tail/
-RUN go install .
+RUN go install -ldflags "-X github.com/jrockway/opinionated-server/server.AppVersion=$(cat .version)" .
 
 FROM alpine:latest
 RUN apk add ca-certificates tzdata
