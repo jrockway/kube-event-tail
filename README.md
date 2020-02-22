@@ -1,5 +1,8 @@
 # kube-event-tail
 
+![CI](https://ci.jrock.us/api/v1/teams/main/pipelines/kube-event-tail/jobs/ci/badge)
+[![](https://images.microbadger.com/badges/version/jrockway/kube-event-tail.svg)](https://microbadger.com/images/jrockway/kube-event-tail)
+
 Have you ever noticed some issue in your cluster, went to run `kubectl get events`, and noticed that
 Kubernetes helpfully deleted all the relevant events? This program is like running
 `kubectl get events --watch`, logging all those events to a log file that you can retain just like a
@@ -27,12 +30,12 @@ Inspect the metrics:
 
 Install into your cluster:
 
-    $ kubectl apply -k github.com/jrockway/kube-event-tail/deploy
+    $ kubectl apply -k github.com/jrockway/kube-event-tail/deploy?ref=v0.0.1
 
 No additional configuration is required, or available. (It creates a deployment in the `kube-system`
-namespace with one replica, and sets up the necessary RBAC machinery to be able to watch the
-events.) After deploying, you should be able to
-`kubectl logs -n kube-system kube-event-tail-xxxxxxxxxx-yyyyy` and see events.
+namespace with one replica, sets up the necessary RBAC machinery to be able to watch the events, and
+installs a PodMonitor to ensure prometheus scrapes the metrics endpoint.) After deploying, you
+should be able to `kubectl logs -n kube-system kube-event-tail-xxxxxxxxxx-yyyyy` and see events.
 
 Never be disappointed that your events went missing before you had time to investigate; now they're
 with the rest of your logs!
