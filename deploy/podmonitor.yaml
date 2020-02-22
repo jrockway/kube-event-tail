@@ -1,0 +1,11 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+    name: kube-event-tail
+spec:
+    selector:
+        matchLabels:
+            app: kube-event-tail
+    podMetricsEndpoints:
+        - port: debug
+          path: /metrics

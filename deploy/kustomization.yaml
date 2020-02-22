@@ -1,0 +1,13 @@
+namespace: kube-system
+commonLabels:
+    app: kube-event-tail
+resources:
+    - deployment.yaml
+    - clusterrole.yaml
+    - serviceaccount.yaml
+    - clusterrolebinding.yaml
+    - podmonitor.yaml
+images:
+    - name: kube-event-tail
+      newName: docker.io/jrockway/kube-event-tail
+      newTag: v0.0.1

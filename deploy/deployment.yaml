@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: kube-event-tail
+spec:
+    replicas: 1
+    template:
+        spec:
+            serviceAccount: kube-event-tail
+            containers:
+                - name: kube-event-tail
+                  image: kube-event-tail
+                  env:
+                      - name: DEBUG_ADDRESS
+                        value: "0.0.0.0:8081"
+                  readinessProbe:
+                      httpGet:
+                          path: /healthz
+                          port: debug
+                  livenessProbe:
+                      httpGet:
+                          path: /healthz
+                          port: debug
+                  ports:
+                      - name: debug
+                        containerPort: 8081
+                  resources:
+                      requests:
+                          cpu: 100m
+                          memory: 45Mi
+                      limits:
+                          memory: 45Mi
