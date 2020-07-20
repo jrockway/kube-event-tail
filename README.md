@@ -30,7 +30,7 @@ Inspect the metrics:
 
 Install into your cluster:
 
-    $ kubectl apply -k github.com/jrockway/kube-event-tail/deploy?ref=v0.0.2
+    $ kubectl apply -k github.com/jrockway/kube-event-tail/deploy?ref=v0.0.3
 
 No additional configuration is required, or available. (It creates a deployment in the `kube-system`
 namespace with one replica, sets up the necessary RBAC machinery to be able to watch the events, and
@@ -39,3 +39,9 @@ should be able to `kubectl logs -n kube-system kube-event-tail-xxxxxxxxxx-yyyyy`
 
 Never be disappointed that your events went missing before you had time to investigate; now they're
 with the rest of your logs!
+
+## For developers
+
+To do a release, update `deploy/kustomization.yaml`, `.version`, and this README with the version
+you intend to release (in the form of `vX.Y.Z`). Tag it with the same version. Then poke CI to do a
+release, at: https://ci.jrock.us/teams/main/pipelines/kube-event-tail/jobs/release/
