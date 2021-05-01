@@ -1,4 +1,4 @@
-FROM golang:1.14 AS build
+FROM golang:1.16 AS build
 WORKDIR /kube-event-tail
 COPY go.mod go.sum /kube-event-tail/
 RUN go mod download
