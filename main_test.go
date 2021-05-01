@@ -44,7 +44,6 @@ func TestLogs(t *testing.T) {
 			Series: &v1.EventSeries{
 				Count:            42,
 				LastObservedTime: metav1.NewMicroTime(time.Now()),
-				State:            v1.EventSeriesStateOngoing,
 			},
 			Source: v1.EventSource{
 				Host:      "localhost",
