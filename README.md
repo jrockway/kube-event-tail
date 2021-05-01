@@ -30,7 +30,7 @@ Inspect the metrics:
 
 Install into your cluster:
 
-    $ kubectl apply -k github.com/jrockway/kube-event-tail/deploy?ref=v0.0.4
+    $ kubectl apply -k github.com/jrockway/kube-event-tail/deploy?ref=v0.0.5
 
 No additional configuration is required, or available. (It creates a deployment in the `kube-system`
 namespace with one replica, sets up the necessary RBAC machinery to be able to watch the events, and
