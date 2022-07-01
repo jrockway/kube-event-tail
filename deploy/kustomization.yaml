@@ -10,4 +10,4 @@ resources:
 images:
     - name: kube-event-tail
       newName: docker.io/jrockway/kube-event-tail
-      newTag: v0.0.5
+      newTag: v0.0.6
