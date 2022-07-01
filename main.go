@@ -33,6 +33,7 @@ var (
 type kflags struct {
 	Kubeconfig string `long:"kubeconfig" env:"KUBECONFIG" description:"Kubeconfig to use to connect to the cluster, when running outside of the cluster."`
 	Master     string `long:"master" env:"KUBE_MASTER" description:"URL of the kubernetes master, only necessary when running outside of the cluster and when it's not specified in the provided kubeconfig."`
+	Namespace  string `long:"namespace" default:"" env:"NAMESPACE" description:"Leave blank to tail events for all namespaces or enter a namespace to tail events for the current namespace."`
 }
 
 func main() {
@@ -44,7 +45,7 @@ func main() {
 
 	ctx := context.Background()
 	go func() {
-		if err := WatchEvents(ctx, kf.Master, kf.Kubeconfig); err != nil {
+		if err := WatchEvents(ctx, kf); err != nil {
 			zap.L().Fatal("problem watching events", zap.Error(err))
 		}
 	}()
@@ -54,18 +55,18 @@ func main() {
 
 // WatchEvents connects to the k8s API server (using an in-cluster configuration if kubconfig and
 // master are empty) and prints out each event that is observed.
-func WatchEvents(ctx context.Context, master, kubeconfig string) error {
-	config, err := clientcmd.BuildConfigFromFlags(master, kubeconfig)
+func WatchEvents(ctx context.Context, kf *kflags) error {
+	clusterConfig, err := clientcmd.BuildConfigFromFlags(kf.Master, kf.Kubeconfig)
 	if err != nil {
 		return fmt.Errorf("kubernetes: build config: %w", err)
 	}
 
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := kubernetes.NewForConfig(clusterConfig)
 	if err != nil {
 		return fmt.Errorf("kubernetes: new client: %w", err)
 	}
 
-	lw := cache.NewListWatchFromClient(clientset.CoreV1().RESTClient(), "events", "", fields.Everything())
+	lw := cache.NewListWatchFromClient(clientset.CoreV1().RESTClient(), "events", kf.Namespace, fields.Everything())
 	r := cache.NewReflector(lw, &v1.Event{}, &s{}, 0)
 	r.Run(ctx.Done())
 	return nil
