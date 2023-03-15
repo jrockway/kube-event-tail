@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-logr/zapr"
 	"github.com/jrockway/opinionated-server/server"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -18,6 +19,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog/v2"
 )
 
 var (
@@ -42,6 +44,9 @@ func main() {
 	kf := new(kflags)
 	server.AddFlagGroup("Kubernetes", kf)
 	server.Setup()
+
+	// Copy client-go logs to the base logger.
+	klog.SetLogger(zapr.NewLogger(zap.L().Named("client-go")))
 
 	ctx := context.Background()
 	go func() {
