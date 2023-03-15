@@ -5,14 +5,19 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest"
+	"go.uber.org/zap/zaptest/observer"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // This exists to check that nothing panics under strange circumstances.
 func TestLogs(t *testing.T) {
-	l := zaptest.NewLogger(t)
+	core, logs := observer.New(zapcore.DebugLevel)
+	l := zaptest.NewLogger(t, zaptest.WrapOptions(zap.WrapCore(func(c zapcore.Core) zapcore.Core {
+		return zapcore.NewTee(c, core)
+	})))
 	zap.ReplaceGlobals(l)
 
 	var nothing *v1.Event
@@ -64,18 +69,23 @@ func TestLogs(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Namespace: "a"},
 			Related:    &v1.ObjectReference{Namespace: "b"},
 		},
+		// 4 valid events to log
 	}
 
 	s := new(s)
-	for _, input := range testData {
-		s.Add(input)
-		s.Delete(input)
-		s.Get(input)
-		s.GetByKey("bar")
+	for _, input := range testData { // 3 logs per valid entry
+		s.Add(input)      //nolint:errcheck
+		s.Delete(input)   //nolint:errcheck
+		s.Get(input)      //nolint:errcheck
+		s.GetByKey("bar") //nolint:errcheck
 		s.List()
 		s.ListKeys()
-		s.Replace([]interface{}{input}, "")
-		s.Update(input)
-		s.Resync()
+		s.Replace([]interface{}{input}, "") //nolint:errcheck
+		s.Update(input)                     //nolint:errcheck
+		s.Resync()                          //nolint:errcheck
+	}
+
+	if got, want := logs.Len(), 4*3; got != want {
+		t.Errorf("number of logs:\n  got: %v\n want: %v", got, want)
 	}
 }

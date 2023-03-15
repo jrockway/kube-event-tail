@@ -12,6 +12,7 @@ import (
 	"github.com/jrockway/opinionated-server/server"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	v1 "k8s.io/api/core/v1"
@@ -102,9 +103,12 @@ func LogEvent(e *v1.Event) {
 
 	zap.L().Named("event").Info(msg,
 		zap.Object("event", zapcore.ObjectMarshalerFunc(func(enc zapcore.ObjectEncoder) error {
+			var errs error
 			enc.AddString("namespace", e.ObjectMeta.Namespace)
 			enc.AddString("name", e.ObjectMeta.Name)
-			enc.AddObject("involvedObject", objRef(&e.InvolvedObject))
+			if err := enc.AddObject("involvedObject", objRef(&e.InvolvedObject)); err != nil {
+				multierr.AppendInto(&errs, fmt.Errorf("marshal involvedObject: %w", err))
+			}
 			if e.Reason != "" {
 				enc.AddString("reason", e.Reason)
 			}
@@ -138,7 +142,9 @@ func LogEvent(e *v1.Event) {
 				enc.AddString("action", a)
 			}
 			if e.Related != nil {
-				enc.AddObject("related", objRef(e.Related))
+				if err := enc.AddObject("related", objRef(e.Related)); err != nil {
+					multierr.AppendInto(&errs, fmt.Errorf("marshal related object: %w", err))
+				}
 			}
 			if rc := e.ReportingController; rc != "" {
 				enc.AddString("reportingController", rc)
@@ -148,6 +154,9 @@ func LogEvent(e *v1.Event) {
 			}
 			if t := e.Type; t != "" && t != "Normal" {
 				enc.AddString("type", t)
+			}
+			if errs != nil {
+				enc.AddString("marshalErrors", errs.Error())
 			}
 			return nil
 		})),

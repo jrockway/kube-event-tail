@@ -6,6 +6,7 @@ require (
 	github.com/go-logr/zapr v1.2.3 // indirect
 	github.com/jrockway/opinionated-server v0.0.22
 	github.com/prometheus/client_golang v1.14.0
+	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.24.0
 	k8s.io/api v0.26.2
 	k8s.io/apimachinery v0.26.2
