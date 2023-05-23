@@ -6,7 +6,7 @@ RUN go mod download
 COPY . /kube-event-tail/
 RUN CGO_ENABLED=0 go install -ldflags "-X github.com/jrockway/opinionated-server/server.AppVersion=$(cat .version)" .
 
-FROM gcr.io/distroless/static-debian10
+FROM gcr.io/distroless/static-debian11
 WORKDIR /
 COPY --from=build /go/bin/kube-event-tail /go/bin/kube-event-tail
 CMD ["/go/bin/kube-event-tail"]
